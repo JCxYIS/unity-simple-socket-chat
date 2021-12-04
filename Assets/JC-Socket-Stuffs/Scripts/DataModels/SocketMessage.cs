@@ -6,6 +6,14 @@ using System;
 [Serializable]
 public class SocketMessage
 {
+    public SocketMessage() { }
+    public SocketMessage(string author, string type, string content)
+    {
+        Author = author;
+        Type = type;
+        Content = content;
+    }
+
     /// <summary>
     /// By who?
     /// </summary>

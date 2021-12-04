@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using System;
 
 public class Room : MonoSingleton<Room>, IRoom
 {
@@ -21,9 +22,9 @@ public class Room : MonoSingleton<Room>, IRoom
     public RoomData RoomData => roomData;
 
     /// <summary>
-    /// my name
+    /// my user data
     /// </summary>
-    public string MyName = "";
+    public RoomUser MyUser;
 
     public bool IsHost = false;
 
@@ -42,12 +43,24 @@ public class Room : MonoSingleton<Room>, IRoom
     /// <summary>
     /// On Destroy
     /// </summary>
-    public event System.Action OnDispose;
+    public event Action OnDispose;
 
     /// <summary>
+    /// On User Join
+    /// </summary>
+    public event Action<RoomUser> OnJoin;
+
+    /// <summary>
+    /// On User Leave
+    /// (UserID)
+    /// </summary>
+    public event Action<string> OnLeave;
+
+    /// <summary>
+    /// On User Chat
     /// (Name, Content)
     /// </summary>
-    public event System.Action<string, string> OnChat;
+    public event Action<string, string> OnChat;
 
     // Make your own events here :)
 
@@ -104,7 +117,8 @@ public class Room : MonoSingleton<Room>, IRoom
         {
             // create a fake new room data for init, until the server update this
             roomData = new RoomData();
-            MyName = username;
+            MyUser = new RoomUser(username);
+            IsHost = isHost;
 
             if(isHost)
             {
@@ -120,9 +134,6 @@ public class Room : MonoSingleton<Room>, IRoom
                 socket.RegisterRoom(this);
                 roomData.Ip = ip;
             }
-
-            roomData.Users.Add(new RoomUser(MyName));
-            IsHost = isHost;
         }
         catch(System.Exception e)
         {
@@ -147,6 +158,8 @@ public class Room : MonoSingleton<Room>, IRoom
     {
         chatPanel.gameObject.SetActive(active);
     }
+
+    /* -------------------------------------------------------------------------- */
     
     /// <summary>
     /// Send Message to socket
@@ -161,7 +174,7 @@ public class Room : MonoSingleton<Room>, IRoom
         }
 
         SocketMessage message = new SocketMessage();
-        message.Author = MyName;
+        message.Author = MyUser.Name;
         message.Type = msgtype;
         message.Content = content;
         // message.Timestamp = System.DateTime.UtcNow;
@@ -169,6 +182,13 @@ public class Room : MonoSingleton<Room>, IRoom
         print($"[ROOM SENDMSG] {message.Author} : ({message.Type}) {message.Content}");
         socket.Send(message);
     }
+
+    public void SendMessage<T>(string msgtype, T content)
+    {
+        SendMessage(msgtype, JsonUtility.ToJson(content));
+    }
+
+     /* -------------------------------------------------------------------------- */
 
     public void Dispose()
     {
@@ -194,21 +214,39 @@ public class Room : MonoSingleton<Room>, IRoom
 
     public void OnReceiveMessage(SocketMessage message)
     {
+        message.Type = message.Type.ToUpper();
         print($"[ROOM GETMSG] {message.Author} : ({message.Type}) {message.Content}");
 
         // handle msg
+        RoomUser user;
         switch(message.Type)
         {
             default:
                 Debug.LogWarning("[ROOM GETMSG] Message type is undefined: " + message.Type);
                 break;
 
-            case "Chat":
+            case "JOIN":
+                user = JsonUtility.FromJson<RoomUser>(message.Content);
+                roomData.Users.Add(user);
+                OnJoin?.Invoke(user);
+                break;
+            
+            case "LEAVE":
+                roomData.Users.RemoveAll(u => u.Name == message.Content);
+                OnLeave?.Invoke(message.Content);
+                break;
+
+            case "CHAT":
                 OnChat?.Invoke(message.Author, message.Content);
                 break;
 
             // Add your custom message handler here :)
         }
+    }
+
+    public void OnSocketConnected()
+    {
+        SendMessage("JOIN", MyUser);
     }
 
     public void OnSocketDispose()
@@ -217,6 +255,8 @@ public class Room : MonoSingleton<Room>, IRoom
         socket = null;
         Dispose();
     }
+
+    
 
     /* -------------------------------------------------------------------------- */
 

@@ -10,5 +10,14 @@ public interface IRoom
     // -- Signal ---
     void OnReceiveMessage(SocketMessage message);
 
+    /// <summary>
+    /// Server: Inited (Listening)
+    /// Client: Connected
+    /// </summary>
+    void OnSocketConnected();
+
+    /// <summary>
+    /// On Socket Dispose
+    /// </summary>
     void OnSocketDispose();
 }

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public class ChatPanel : MonoBehaviour
 {
@@ -12,32 +13,26 @@ public class ChatPanel : MonoBehaviour
     InputField _inputField;
 
 
+    
+
+    /// <summary>
+    /// Awake is called when the script instance is being loaded.
+    /// </summary>
+    void Awake()
+    {
+        _chatText.text = "";
+        Room.Instance.OnChat += OnChat;
+        Room.Instance.OnJoin += OnJoin;
+        Room.Instance.OnLeave += OnLeave;
+    }
+
     /// <summary>
     /// This function is called when the object becomes enabled and active.
     /// </summary>
     void OnEnable()
     {        
-        Room.Instance.OnChat += OnChat;
         _chatText.transform.Translate(0, 1000, 0);
     }
-
-    /// <summary>
-    /// This function is called when the behaviour becomes disabled or inactive.
-    /// </summary>
-    void OnDisable()
-    {
-        Room.Instance.OnChat -= OnChat;
-    }
-
-
-    /// <summary>
-    /// Start is called on the frame when a script is enabled just before
-    /// any of the Update methods is called the first time.
-    /// </summary>
-    void Start()
-    {
-        _chatText.text = "";
-    }    
 
     /// <summary>
     /// Update is called every frame, if the MonoBehaviour is enabled.
@@ -50,18 +45,42 @@ public class ChatPanel : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// This function is called when the MonoBehaviour will be destroyed.
+    /// </summary>
+    void OnDestroy()
+    {
+        if(!Room.Instance)
+            return;
+        Room.Instance.OnChat -= OnChat;
+        Room.Instance.OnJoin -= OnJoin;
+        Room.Instance.OnLeave -= OnLeave;
+    }
+
+
+    /* -------------------------------------------------------------------------- */
 
     public void SendChat()
     {
         if(string.IsNullOrEmpty(_inputField.text))
             return;
 
-        Room.Instance.SendMessage("Chat", _inputField.text);
+        Room.Instance.SendMessage("CHAT", _inputField.text);
         _inputField.text = "";
     }
 
     void OnChat(string author, string msg)
     {
         _chatText.text += $"{author}: {msg}\n";
+    }
+    
+    void OnJoin(RoomUser user)
+    {
+        _chatText.text += $"<color=#87878787<i>{user.Name} has joined the room!</i></color>\n";
+    }
+
+    void OnLeave(string userId)
+    {
+        _chatText.text += $"<color=#87878787<i>{userId} has left the room...</i></color>\n";
     }
 }

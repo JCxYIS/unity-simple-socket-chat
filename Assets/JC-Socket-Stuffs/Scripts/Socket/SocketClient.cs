@@ -80,6 +80,7 @@ public class SocketClient : MonoSingleton<SocketClient>, ISocketBase
 
         // CONNECT
         socket.Connect(host);
+        room.OnSocketConnected();
         print("[SOCKETC Connected]");
 
         // read

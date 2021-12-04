@@ -134,6 +134,7 @@ public class SocketServer : MonoSingleton<SocketServer>, ISocketBase
 
         // LISTEN
         serverSocket.Listen(16);
+        room.OnSocketConnected();
         Debug.Log("[SOCKETS LISTENING] "+ipEndPoint.Address);
 
 
@@ -159,7 +160,7 @@ public class SocketServer : MonoSingleton<SocketServer>, ISocketBase
     {
         byte[] buffer;
         string receive;
-
+        string clientName = "";
         while(!shouldStop)
         {
             buffer = new byte[1024];
@@ -170,7 +171,9 @@ public class SocketServer : MonoSingleton<SocketServer>, ISocketBase
             {
                 Debug.LogWarning("[SOCKETS EMPTY RECV] A Client Socket Disconnected");
                 clientSocket.Dispose();
+                clientSockets.Remove(clientSocket);
                 clientSocketThread.Remove(clientSocket);                
+                Send(new SocketMessage("", "LEAVE", clientName));
                 return;
             }
 
@@ -182,6 +185,18 @@ public class SocketServer : MonoSingleton<SocketServer>, ISocketBase
             try
             {
                 var msg = JsonUtility.FromJson<SocketMessage>(receive);
+
+                // memorize client name, in case we forget / sanity check name is modified
+                if(string.IsNullOrEmpty(clientName))
+                {
+                    // memorize that
+                    clientName = msg.Author;
+                }
+                else
+                {
+                    Debug.LogWarning($"[SERVERS] A client failed to pass sanity check: NAME {clientName} -> {msg.Author}");
+                    msg.Author = clientName;
+                }
 
                 // broadcast to every clients including myself
                 Send(msg);
