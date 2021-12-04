@@ -15,9 +15,9 @@ public class LandingSceneManager : MonoBehaviour
 
     [Header("Bindings")]
     [SerializeField] RectTransform[] Panels;
+    [SerializeField] InputField Intro_NameInput;
     [SerializeField] Text Room_IpText;
     [SerializeField] Text Room_PlayersText;
-    [SerializeField] Button Room_PlayButton;
 
 
     [Header("Variables")]
@@ -30,7 +30,6 @@ public class LandingSceneManager : MonoBehaviour
     /// </summary>
     void Start()
     {
-        print(GameManager.Instance.Version);
         ChangeState(State.Main);
     }
 
@@ -48,7 +47,6 @@ public class LandingSceneManager : MonoBehaviour
         // 
         if(state == State.Room)
         {
-            Room_PlayButton.gameObject.SetActive(Room.Instance.IsHost);                        
             Room_IpText.text = "IP: " + Room.Instance.RoomData.Ip;
             Room_PlayersText.text = "<b>---Players---</b>\n"; 
             Room.Instance.RoomData.Users.ForEach(u => Room_PlayersText.text += u.Name + "\n");
@@ -60,6 +58,11 @@ public class LandingSceneManager : MonoBehaviour
 
     public void ChangeState(int stateId)
     {
+        if(string.IsNullOrWhiteSpace(Intro_NameInput.text))
+        {
+            Debug.Log("Name cannot be empty");
+            return;
+        }
         ChangeState((State)stateId);
     }
 
@@ -75,10 +78,12 @@ public class LandingSceneManager : MonoBehaviour
 
     /* -------------------------------------------------------------------------- */
 
-    public void GoGame()
-    {        
-        Room.Instance.SendMessage("GoGame", JsonUtility.ToJson(new GameData()));
-        // SceneManager.LoadScene("Game");
+    /// <summary>
+    /// Open Chat button
+    /// </summary>
+    public void OpenChat()
+    {
+        Room.Instance.ToggleChatPanel(true);
     }
 
     /* -------------------------------------------------------------------------- */
@@ -87,13 +92,13 @@ public class LandingSceneManager : MonoBehaviour
     
     public void CreateRoom()
     {
-        Room.Instance.CreateRoom(isHost: true, "");
+        Room.Instance.CreateRoom(Intro_NameInput.text, true, "");
         ChangeState(State.Room);
     }
 
     public void JoinRoom(InputField ipInput)
     {
-        Room.Instance.CreateRoom(isHost: false, ipInput.text);
+        Room.Instance.CreateRoom(Intro_NameInput.text, false, ipInput.text);
         ChangeState(State.Room);
     }
 

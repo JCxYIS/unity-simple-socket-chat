@@ -57,7 +57,7 @@ public class Room : MonoSingleton<Room>, IRoom
 
     void Awake()
     {
-        MyName =  "Player" + Random.Range(0, short.MaxValue); // FIXME should be unique id
+        // MyName =  "Player" + Random.Range(0, short.MaxValue);
         DontDestroyOnLoad(gameObject);
 
         chatPanel = JC.Utility.ResourcesUtil.InstantiateFromResources("Prefabs/ChatPanel").GetComponent<ChatPanel>();
@@ -78,7 +78,11 @@ public class Room : MonoSingleton<Room>, IRoom
     {
         if(Input.GetKeyDown(KeyCode.F7))
         {
-            chatPanel.gameObject.SetActive(!chatPanel.gameObject.activeInHierarchy);
+            ToggleChatPanel();
+        }
+        else if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            ToggleChatPanel();
         }
     }
 
@@ -89,15 +93,17 @@ public class Room : MonoSingleton<Room>, IRoom
     /// <summary>
     /// Create room and socket connection.
     /// </summary>
-    /// <param name="isHost"></param>
+    /// <param name="username">my user name</param>
+    /// <param name="isHost">if true, create as server; otherwise, try connect to ip</param>
     /// <param name="ip">if isHost = true, this param is not required</param>
     /// <returns>ip</returns>
-    public void CreateRoom(bool isHost, string ip)
+    public void CreateRoom(string username, bool isHost, string ip)
     {
         try
         {
             // create a fake new room data for init, until the server update this
             roomData = new RoomData();
+            MyName = username;
 
             if(isHost)
             {
@@ -123,6 +129,22 @@ public class Room : MonoSingleton<Room>, IRoom
             Debug.LogError("Error while creating room, now dispose.");
             Dispose();
         }
+    }
+
+    /// <summary>
+    /// Toggle the chat panel / console
+    /// </summary>
+    public void ToggleChatPanel()
+    {
+        chatPanel.gameObject.SetActive(!chatPanel.gameObject.activeInHierarchy);
+    }
+
+    /// <summary>
+    /// Toggle the chat panel / console
+    /// </summary>
+    public void ToggleChatPanel(bool active)
+    {
+        chatPanel.gameObject.SetActive(active);
     }
     
     /// <summary>
@@ -184,12 +206,7 @@ public class Room : MonoSingleton<Room>, IRoom
                 OnChat?.Invoke(message.Author, message.Content);
                 break;
 
-            case "GoGame":
-                GameData gameData = JsonUtility.FromJson<GameData>(message.Content);
-                SceneManager.LoadSceneAsync("Game").completed += ac =>{
-                    FindObjectOfType<GameController>().Init(gameData);
-                };
-                break;
+            // Add your custom message handler here :)
         }
     }
 
