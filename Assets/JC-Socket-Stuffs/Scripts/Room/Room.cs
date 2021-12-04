@@ -49,6 +49,7 @@ public class Room : MonoSingleton<Room>, IRoom
     /// </summary>
     public event System.Action<string, string> OnChat;
 
+    // Make your own events here :)
 
     /* -------------------------------------------------------------------------- */
     /*                             Monobehaviour Func                             */

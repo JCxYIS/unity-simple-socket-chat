@@ -30,6 +30,7 @@ public class LandingSceneManager : MonoBehaviour
     /// </summary>
     void Start()
     {
+        Intro_NameInput.text = PlayerPrefs.GetString("JC_SOCKET_CHAT_USERNAME");
         ChangeState(State.Main);
     }
 
@@ -60,9 +61,10 @@ public class LandingSceneManager : MonoBehaviour
     {
         if(string.IsNullOrWhiteSpace(Intro_NameInput.text))
         {
-            Debug.Log("Name cannot be empty");
+            PromptBox.CreateMessageBox("Name cannot be empty!");
             return;
         }
+        PlayerPrefs.SetString("JC_SOCKET_CHAT_USERNAME", Intro_NameInput.text);
         ChangeState((State)stateId);
     }
 
