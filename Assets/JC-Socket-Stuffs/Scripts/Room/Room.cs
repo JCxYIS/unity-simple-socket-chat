@@ -219,20 +219,34 @@ public class Room : MonoSingleton<Room>, IRoom
 
         // handle msg
         RoomUser user;
+        // RoomData room;
         switch(message.Type)
         {
             default:
                 Debug.LogWarning("[ROOM GETMSG] Message type is undefined: " + message.Type);
                 break;
+            
+            case "ROOM_UPDATE":
+                if(!IsHost)
+                   roomData = JsonUtility.FromJson<RoomData>(message.Content);
+                break;
 
             case "JOIN":
                 user = JsonUtility.FromJson<RoomUser>(message.Content);
-                roomData.Users.Add(user);
+                if(IsHost)
+                {
+                    roomData.Users.Add(user);
+                    SendMessage("ROOM_UPDATE", roomData);
+                }
                 OnJoin?.Invoke(user);
                 break;
             
             case "LEAVE":
-                roomData.Users.RemoveAll(u => u.Name == message.Content);
+                if(IsHost)
+                {
+                    roomData.Users.RemoveAll(u => u.Name == message.Content);
+                    SendMessage("ROOM_UPDATE", roomData);
+                }
                 OnLeave?.Invoke(message.Content);
                 break;
 
@@ -256,9 +270,8 @@ public class Room : MonoSingleton<Room>, IRoom
         Dispose();
     }
 
-    
 
     /* -------------------------------------------------------------------------- */
 
-    
+
 }

@@ -76,11 +76,11 @@ public class ChatPanel : MonoBehaviour
     
     void OnJoin(RoomUser user)
     {
-        _chatText.text += $"<color=#87878787<i>{user.Name} has joined the room!</i></color>\n";
+        _chatText.text += $"<color=#878787><i>{user.Name} has joined the room!</i></color>\n";
     }
 
     void OnLeave(string userId)
     {
-        _chatText.text += $"<color=#87878787<i>{userId} has left the room...</i></color>\n";
+        _chatText.text += $"<color=#878787><i>{userId} has left the room...</i></color>\n";
     }
 }

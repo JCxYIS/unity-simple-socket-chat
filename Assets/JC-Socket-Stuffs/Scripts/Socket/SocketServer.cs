@@ -194,7 +194,7 @@ public class SocketServer : MonoSingleton<SocketServer>, ISocketBase
                 }
                 else
                 {
-                    Debug.LogWarning($"[SERVERS] A client failed to pass sanity check: NAME {clientName} -> {msg.Author}");
+                    // Debug.LogWarning($"[SERVERS] A client failed to pass sanity check: NAME {clientName} -> {msg.Author}");
                     msg.Author = clientName;
                 }
 

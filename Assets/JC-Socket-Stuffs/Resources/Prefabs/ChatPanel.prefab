@@ -706,6 +706,7 @@ GameObject:
   - component: {fileID: 8675447952536253516}
   - component: {fileID: 8675447952536253519}
   - component: {fileID: 8675447952536253518}
+  - component: {fileID: 1999036824699493883}
   m_Layer: 5
   m_Name: Content
   m_TagString: Untagged
@@ -773,7 +774,12 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Haha Test: HahaTest'
+  m_Text: '<color=#878787><i>Haha Test: HahaTest</i></color>
+
+    Suisui Hosimachi:
+    succ
+
+    Meme Man: succ'
 --- !u!114 &8675447952536253518
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -788,6 +794,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_HorizontalFit: 0
   m_VerticalFit: 2
+--- !u!114 &1999036824699493883
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8675447952536253504}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EffectColor: {r: 0, g: 0, b: 0, a: 0.5}
+  m_EffectDistance: {x: 1, y: -1}
+  m_UseGraphicAlpha: 1
 --- !u!1 &8675447952980606630
 GameObject:
   m_ObjectHideFlags: 0

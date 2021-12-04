@@ -79,7 +79,7 @@ public class SocketClient : MonoSingleton<SocketClient>, ISocketBase
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
         // CONNECT
-        socket.Connect(host);
+        socket.Connect(host); // FIXME socket error here
         room.OnSocketConnected();
         print("[SOCKETC Connected]");
 
