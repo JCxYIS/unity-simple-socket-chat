@@ -6,6 +6,7 @@ using System;
 using System.Net.Sockets;
 using System.Net;
 using System.Text;
+using System.Net.NetworkInformation;
 
 /// <summary>
 /// Socket Server.
@@ -296,17 +297,62 @@ public class SocketServer : MonoSingleton<SocketServer>, ISocketBase
     /// </summary>
     /// <returns></returns>
     private IPAddress GetLocalIp()
-    {
-        // FIXME wrong local ip :(
-        IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
-        foreach (IPAddress ip in host.AddressList)
+    {    
+        // From https://stackoverflow.com/a/40528818/8178579
+        UnicastIPAddressInformation mostSuitableIp = null;
+        var networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+        foreach (var network in networkInterfaces)
         {
-            if (ip.AddressFamily == AddressFamily.InterNetwork)
-            {
-                return ip;
-            }
+            if (network.OperationalStatus != OperationalStatus.Up)
+                continue;
 
+            var properties = network.GetIPProperties();
+            if (properties.GatewayAddresses.Count == 0)
+                continue;
+            foreach (var address in properties.UnicastAddresses)
+            {
+                if (address.Address.AddressFamily != AddressFamily.InterNetwork) // IPv4
+                    continue;
+                if (IPAddress.IsLoopback(address.Address)) // loopback addresses (e.g., 127.0.0.1)
+                    continue;
+                if (!address.IsDnsEligible)
+                {
+                    if (mostSuitableIp == null)
+                        mostSuitableIp = address;
+                    continue;
+                }
+                // The best IP is the IP got from DHCP server
+                if (address.PrefixOrigin != PrefixOrigin.Dhcp)
+                {
+                    if (mostSuitableIp == null || !mostSuitableIp.IsDnsEligible)
+                        mostSuitableIp = address;
+                    continue;
+                }
+
+                return address.Address;
+            }
         }
-        return null;
+
+        // default method
+        if(mostSuitableIp == null)
+        {
+            Debug.LogWarning("No suitible local ip found, Fallback to old method");
+            IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
+            IPAddress finalIp = null; // threre might be multiple ips
+            foreach (IPAddress ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    finalIp = ip;
+                }
+            }
+            if(finalIp != null)
+                return finalIp;
+            throw new Exception("No suitible local ip found, even with DNS GetHostEntry method.");
+        }
+        else
+        {
+            return mostSuitableIp.Address;
+        }
     }
 }
