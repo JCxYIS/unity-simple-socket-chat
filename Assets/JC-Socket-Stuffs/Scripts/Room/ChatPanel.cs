@@ -41,7 +41,14 @@ public class ChatPanel : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
         {
-            SendChat();
+            if(string.IsNullOrWhiteSpace(_inputField.text))
+            {
+                _inputField.Select();
+            }
+            else
+            {
+                SendChat();
+            }
         }
     }
 
@@ -62,7 +69,7 @@ public class ChatPanel : MonoBehaviour
 
     public void SendChat()
     {
-        if(string.IsNullOrEmpty(_inputField.text))
+        if(string.IsNullOrWhiteSpace(_inputField.text))
             return;
 
         Room.Instance.SendMessage("CHAT", _inputField.text);
