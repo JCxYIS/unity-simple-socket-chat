@@ -89,6 +89,8 @@ public class Room : MonoSingleton<Room>, IRoom
         OnDispose += ()=>{
             if(!gameObject)
                 return;
+            
+            // Things to do when room is disposed
             SceneManager.LoadSceneAsync("Landing").completed += a => {
                 PromptBox.CreateMessageBox("Disconnected from Room!");
             };
@@ -106,7 +108,7 @@ public class Room : MonoSingleton<Room>, IRoom
         }
         else if(Input.GetKeyDown(KeyCode.Escape))
         {
-            ToggleChatPanel();
+            ToggleChatPanel(false);
         }
     }
 
