@@ -297,6 +297,7 @@ public class SocketServer : MonoSingleton<SocketServer>, ISocketBase
     /// <returns></returns>
     private IPAddress GetLocalIp()
     {
+        // FIXME wrong local ip :(
         IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
         foreach (IPAddress ip in host.AddressList)
         {
