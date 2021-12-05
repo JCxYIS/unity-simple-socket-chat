@@ -71,7 +71,15 @@ public class Room : MonoSingleton<Room>, IRoom
 
     protected override void Init()
     {
-        // MyName =  "Player" + Random.Range(0, short.MaxValue);
+        
+    }
+
+    /// <summary>
+    /// Start is called on the frame when a script is enabled just before
+    /// any of the Update methods is called the first time.
+    /// </summary>
+    void Start()
+    {
         DontDestroyOnLoad(gameObject);
 
         chatPanel = JC.Utility.ResourcesUtil.InstantiateFromResources("Prefabs/ChatPanel").GetComponent<ChatPanel>();
