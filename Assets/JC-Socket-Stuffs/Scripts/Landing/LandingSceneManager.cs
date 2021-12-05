@@ -100,6 +100,11 @@ public class LandingSceneManager : MonoBehaviour
 
     public void JoinRoom(InputField ipInput)
     {
+        if(!System.Net.IPAddress.TryParse(ipInput.text, out System.Net.IPAddress ip))
+        {
+            PromptBox.CreateMessageBox("Invalid IP detected");
+            return;
+        }
         Room.Instance.CreateRoom(Intro_NameInput.text, false, ipInput.text);
         ChangeState(State.Room);
     }

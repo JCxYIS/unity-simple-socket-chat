@@ -69,7 +69,7 @@ public class Room : MonoSingleton<Room>, IRoom
     /* -------------------------------------------------------------------------- */
 
 
-    void Awake()
+    protected override void Init()
     {
         // MyName =  "Player" + Random.Range(0, short.MaxValue);
         DontDestroyOnLoad(gameObject);
@@ -79,6 +79,8 @@ public class Room : MonoSingleton<Room>, IRoom
         chatPanel.gameObject.SetActive(false);
 
         OnDispose += ()=>{
+            if(!gameObject)
+                return;
             SceneManager.LoadSceneAsync("Landing").completed += a => {
                 PromptBox.CreateMessageBox("Disconnected from Room!");
             };
@@ -193,13 +195,9 @@ public class Room : MonoSingleton<Room>, IRoom
     public void Dispose()
     {
         socket?.Dispose(); 
-
-        if(gameObject)
-        {
-            OnDispose?.Invoke();  
-            Destroy(gameObject);
-            print("[ROOM] Destroyed");
-        }
+        OnDispose?.Invoke();  
+        Destroy(gameObject);
+        print("[ROOM] Destroyed");
     }
 
     /* -------------------------------------------------------------------------- */
