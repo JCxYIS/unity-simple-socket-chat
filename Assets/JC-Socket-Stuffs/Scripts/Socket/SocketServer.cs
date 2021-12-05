@@ -73,7 +73,7 @@ public class SocketServer : MonoSingleton<SocketServer>, ISocketBase
     /// </summary>
     void OnDestroy()
     {
-        Dispose();
+        // Dispose();
     }
 
     /// <summary>
@@ -100,7 +100,7 @@ public class SocketServer : MonoSingleton<SocketServer>, ISocketBase
     /// Start Server Socket 
     /// </summary>
     /// <returns>local ip / port</returns>
-    public IPEndPoint StartServer()
+    public IPEndPoint StartServer(int port)
     {
         // thread is running
         if(serverSocketThread != null)
@@ -111,7 +111,7 @@ public class SocketServer : MonoSingleton<SocketServer>, ISocketBase
         // Get host
         IPAddress localIp = GetLocalIp();
         Debug.Log("Ip=" + localIp.ToString());
-        ipEndPoint = new IPEndPoint(localIp, 42069);        
+        ipEndPoint = new IPEndPoint(localIp, port);        
 
         // Create Update thread
         serverSocketThread = new Thread(ServerSocketThread);
@@ -130,12 +130,30 @@ public class SocketServer : MonoSingleton<SocketServer>, ISocketBase
         serverSocket = new Socket(ipEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
         // BIND
-        serverSocket.Bind(ipEndPoint);
+        try
+        {
+            serverSocket.Bind(ipEndPoint);
+        }
+        catch(Exception e)
+        {
+            Debug.LogError("[SOCKETS Error] Error while Binding: " + e);
+            Dispose();
+            return;
+        }
 
         // LISTEN
-        serverSocket.Listen(16);
-        room.OnSocketConnected();
-        Debug.Log("[SOCKETS LISTENING] "+ipEndPoint.Address);
+        try
+        {
+            serverSocket.Listen(16);
+            room.OnSocketConnected();
+            Debug.Log("[SOCKETS LISTENING] "+ipEndPoint.Address);
+        }
+        catch(Exception e)
+        {
+            Debug.LogError("[SOCKETS Error] Error while Listening: " + e);
+            Dispose();
+            return;
+        }
 
 
         while(!shouldStop)
@@ -225,13 +243,21 @@ public class SocketServer : MonoSingleton<SocketServer>, ISocketBase
         }
         clientSockets = new List<Socket>();
         clientSocketThread = new Dictionary<Socket, Thread>();
-
-        room.OnSocketDispose();
         
+        // thread lock stuffs
+        lock(threadTasks)
+        {
+            threadTasks.Enqueue(()=>{
+                room?.OnSocketDispose();
+                Destroy(gameObject);
+            });
+        }
+
         // close server
-        serverSocketThread?.Abort();
+        serverSocketThread?.Abort(); // 
         serverSocket?.Dispose();
         serverSocketThread = null;
+
     }
 
     /* -------------------------------------------------------------------------- */

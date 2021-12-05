@@ -37,7 +37,7 @@ public class SocketClient : MonoSingleton<SocketClient>, ISocketBase
     /// </summary>
     void OnDestroy()
     {
-        Dispose();
+        // Dispose();
     }
 
     /// <summary>
@@ -79,9 +79,18 @@ public class SocketClient : MonoSingleton<SocketClient>, ISocketBase
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
         // CONNECT
-        socket.Connect(host); // FIXME socket error here
-        room.OnSocketConnected();
-        print("[SOCKETC Connected]");
+        try
+        {
+            socket.Connect(host);
+            room.OnSocketConnected();
+            print("[SOCKETC Connected]");
+        }
+        catch(Exception e)
+        {
+            Debug.LogError("[SOCKETC Error] Error while Connecting: " + e);
+            Dispose();
+            return;
+        }
 
         // read
         byte[] buffer = new byte[1024];
@@ -139,10 +148,22 @@ public class SocketClient : MonoSingleton<SocketClient>, ISocketBase
     }
 
     public void Dispose()
-    {
+    {        
+        // socket
         socket?.Dispose();
-        room.OnSocketDispose();
+
+        // lock
+        lock(threadTasks)
+        {
+            threadTasks.Enqueue(()=>{
+                room?.OnSocketDispose();
+                Destroy(gameObject);
+            });
+        }
+
+        // thread
         thread?.Abort();
         thread = null;
+        
     }    
 }

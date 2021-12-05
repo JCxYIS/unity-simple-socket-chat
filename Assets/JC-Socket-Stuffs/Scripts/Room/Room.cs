@@ -122,16 +122,16 @@ public class Room : MonoSingleton<Room>, IRoom
 
             if(isHost)
             {
-                var ipEndpoint = SocketServer.Instance.StartServer();
                 socket = SocketServer.Instance;
                 socket.RegisterRoom(this);
+                var ipEndpoint = SocketServer.Instance.StartServer(42069);
                 roomData.Ip =  ipEndpoint.Address.ToString();
             }
             else
             {
-                SocketClient.Instance.TryConnect(ip, 42069);
                 socket = SocketClient.Instance;
                 socket.RegisterRoom(this);
+                SocketClient.Instance.TryConnect(ip, 42069);
                 roomData.Ip = ip;
             }
         }
